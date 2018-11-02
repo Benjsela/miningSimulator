@@ -1,0 +1,511 @@
+#include "engine.hpp"
+#include<stdio.h>
+#include<stdlib.h>
+#include<fstream>
+#include<iostream>
+#include<string>
+#include<sstream>
+
+
+/*sets up and plays a game and returns fraction mined by each player*/
+float * game0(int num_players, int num_rounds,float * powers,int (*strategy[])(Player * p, Chain * c)){
+
+  Chain * chain = new Chain();
+  Block * gen = new Block(-1);
+  chain->appendBlock(gen,NULL,1);
+  //  Player * list[] =  {p1,p2,p3};
+  Player ** list = new  Player*[num_players];
+  for(int i=0;i<num_players;i++){
+    list[i] = new Player(powers[i],i+1);
+    list[i]->pchain->origin = gen;
+    list[i]->strat = strategy[i];
+  }
+  
+  int total = rounds(num_players,num_rounds,list,chain);
+  float * results = new float[num_players];
+  for(int i=0;i<num_players;i++){
+    results[i] = (((float)(list[i]->mined))/((float)total));
+  }
+  for(int j=0;j<num_players;j++){
+    delete (list[j]); 
+  }
+  
+  delete [] list;
+  
+  delete chain;  
+  return results;
+}
+
+/*2 selfish miners, first selfish miner size is fixed and second selfish miner size is varied*/
+int oneDimPlot(int num_rounds, float resolution, float a){
+  int (*h)(Player * p, Chain * c) = honestMine;
+  int (*s)(Player * p, Chain * c) = selfish;
+  int (*s2)(Player * p, Chain * c) = pub_n;
+  float b = 0;
+  float honest = 1-a-b;
+  float inc = .01;
+  
+   std::ofstream myfile;
+   myfile.open("test2.txt");
+  for(int i=0;i<50;i++){
+     printf("i=%d\r",i);
+     std::cout.flush();
+     b = b+inc;
+     honest = 1-a-b;
+     int (*strategy[])(Player * p, Chain * c) = {h,s,s};
+     float sizes[3] = {honest,a,b};
+     float * results = game0(3,num_rounds,sizes,strategy);
+     float rewards = results[1];
+     int rewards2 = (int)(1000*rewards);
+     rewards = ((float)rewards2)/((float)1000);
+     std::ostringstream ss;
+     std::ostringstream ss2;
+    ss << b;
+    std::string s(ss.str());
+    ss2 << rewards;
+    std::string s2(ss2.str());
+    std::string k = s+","+s2;
+    myfile << k+"\n";
+  }
+  
+  return 0;
+}
+
+int twoDimPlot(int num_rounds){
+  int (*h)(Player * p, Chain * c) = honestMine;
+  int (*s)(Player * p, Chain * c) = selfish;
+  int (*s2)(Player * p, Chain * c) = pub_n;
+  float a=.18;
+  float b=.18;
+  float honest = 1-a-b;
+  float inc = .001;
+ 
+  int (*strategy[])(Player * p, Chain * c) = {h,s,s};
+
+  
+  std::ofstream myfile;
+  myfile.open("test3.txt");
+  for(int i=180;i<330;i++){
+    float percent = (100*((float)(i-180))/((float)150));
+    printf("%f%%\r",percent);
+    std::cout.flush();
+    a = .18; 
+    for(int j=180;j<330;j++){
+     
+      honest = 1-a-b;
+      float sizes[3] = {honest,a,b};
+      float * results = game0(3,num_rounds,sizes,strategy);
+      float rewards = results[1];
+      float rewards2 = results[2];
+      // printf("rewards = %f\n",rewards);
+      //  printf("rewards2 = %f\n",rewards2);
+      // int r = (int)(1000*rewards);
+      // int r2 = (int)(1000*rewards2);
+      // rewards = ((float)r)/((float)1000);
+      // rewards2 = ((float)r2)/((float)1000);
+      
+      // printf("r=%f\n",rewards);
+      // printf("r2=%f\n",rewards2);
+      
+      if(rewards>a && rewards2>b){
+	rewards = 1;
+      }
+      else if(rewards>a && rewards2<b){
+	rewards = 2;
+      }
+      else if(rewards<a && rewards2>b){
+	rewards = 3;
+      }
+      else{
+	rewards = 0;
+      }
+      
+      delete [] results;
+      
+      std::ostringstream ss;
+      std::ostringstream ss2;
+      ss<<rewards;
+      std::string s(ss.str());
+      std::string k = s+",";
+      myfile<<k;
+      a = a + inc;
+    }
+    myfile<<"\n";
+     b = b+inc;
+  }
+  
+
+  return 0;
+
+}
+
+int twoDimPlot_v2(int num_rounds){
+  int (*h)(Player * p, Chain * c) = honestMine;
+  int (*s)(Player * p, Chain * c) = selfish;
+  int (*s2)(Player * p, Chain * c) = pub_n;
+  float a=.18;
+  float b=.18;
+  float honest = 1-a-b;
+  float inc = .001;
+ 
+  int (*strategy[])(Player * p, Chain * c) = {h,s,s};
+
+  std::ofstream selfish1;
+  std::ofstream selfish2;
+  selfish1.open("s1.txt");
+  selfish2.open("s2.txt");
+ 
+  for(int i=180;i<330;i++){
+    float percent = (100*((float)(i-180))/((float)150));
+    printf("%f%%\r",percent);
+    std::cout.flush();
+    a = .18; 
+    for(int j=180;j<330;j++){
+     
+      honest = 1-a-b;
+      float sizes[3] = {honest,a,b};
+      float * results = game0(3,num_rounds,sizes,strategy);
+      float rewards = results[1];
+      float rewards2 = results[2];
+      // printf("rewards = %f\n",rewards);
+      //  printf("rewards2 = %f\n",rewards2);
+      // int r = (int)(1000*rewards);
+      // int r2 = (int)(1000*rewards2);
+      // rewards = ((float)r)/((float)1000);
+      // rewards2 = ((float)r2)/((float)1000);
+      
+      // printf("r=%f\n",rewards);
+      // printf("r2=%f\n",rewards2);
+
+      std::ostringstream aa;
+      std::ostringstream aa2;
+      aa<<rewards2;
+      std::string k1(aa.str());
+      std::string k2 = k1+",";
+      selfish2<<k2;
+     
+      
+      delete [] results;
+      
+      std::ostringstream ss;
+      std::ostringstream ss2;
+      ss<<rewards;
+      std::string s(ss.str());
+      std::string k = s+",";
+      selfish1<<k;
+      a = a + inc;
+    }
+    selfish1<<"\n";
+    selfish2<<"\n";
+    b = b+inc;
+  }
+  return 0;
+}
+
+
+
+
+int game1(){
+  Block * gen = new Block(-1);
+  Chain * chain = new Chain();
+  chain->appendBlock(gen,NULL,1); 
+  Player ** list = new Player*[3];
+  float power[] = {.5,.25,.25};
+  for(int i=0;i<3;i++){
+     list[i] = new Player(power[i],i+1);
+  }
+  int (*h)(Player * p, Chain * c) = honestMine;
+  int (*s)(Player * p, Chain * c) = selfish;
+  
+  list[0]->strat = h;
+  list[1]->strat = s;
+  list[2]->strat = s;
+  //  int num_rounds = 10;
+  int num_players = 3;
+
+  std::ofstream myfile;
+  myfile.open("test1.txt");
+  
+
+  for(int i=0;i<5;i++){
+    for(int j=0;j<5;j++){
+      // int total = rounds(num_players,num_rounds,list,chain);
+      
+      for(int k=0;k<num_players;k++){
+
+
+      }
+
+    }
+    myfile << "\n";
+  }
+   
+  return 0;
+}
+
+
+
+  
+
+int game2(){
+  Chain * chain = new Chain();
+  Player * p1 = new Player(.118,1);
+  Player * p2 = new Player(.047,2);
+  Player * p3 = new Player(.047,3);
+  Player * p4 = new Player(.047,4);
+  Player * p5 = new Player(.047,5);
+  Player * p6 = new Player(.047,6);
+  Player * p7 = new Player(.047,7);
+  Player * p8 = new Player(.047,8);
+  Player * p9 = new Player(.047,9);
+  Player * p10 = new Player(.047,10);
+  Player * p11 = new Player(.047,11);
+  Player * p12 = new Player(.047,12);
+  Player * p13 = new Player(.047,13);
+  Player * p14 = new Player(.047,14);
+  Player * p15 = new Player(.047,15);
+  Player * p16 = new Player(.047,16);
+  Player * p17 = new Player(.047,17);
+  Player * p18 = new Player(.047,18);
+  Player * p19 = new Player(.047,19);
+ 
+
+  Block * gen = new Block(-1);
+  chain->appendBlock(gen,NULL,1); 
+  p1->pchain->origin = gen;
+  p2->pchain->origin = gen;
+  p3->pchain->origin = gen;
+  p4->pchain->origin = gen;
+  p5->pchain->origin = gen;
+  p6->pchain->origin = gen;
+  //  p1->gamma = 15;
+  // p2->gamma=4;
+  // p3->gamma=4;
+  //  std::ofstream myfile;
+  // myfile.open("sdfdf.txt");
+  // myfile << "sdfd";
+  //myfile.close();
+  
+  int (*h)(Player * p, Chain * c) = honestMine;
+  int (*s)(Player * p, Chain * c) = selfish;
+  int (*s2)(Player * p, Chain * c) = pub_n;
+  p1->strat = h;
+  p2->strat = s;
+  p3->strat = s;
+  p4->strat = s;
+  p5->strat = s;
+  p6->strat = s;
+  
+  int num_players = 19;
+  int num_rounds = 5000000;
+  Player * arr[] = {p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,p11,p12,p13,p14,p15,p16,p17,p18,p19};
+  for(int i=1;i<19;i++){
+    arr[i]->strat = s;
+    arr[i]->pchain->origin = gen;
+    arr[i]->hash = .049;
+  }
+  int total =  rounds(num_players,num_rounds,arr,chain);
+  //  Block * curr = chain->race_set->choose();
+
+
+  //  float * m = new float[num_players];
+  /*
+  while(curr!=NULL){
+    for(int i=0;i<num_players;i++){
+      if(curr->playerID==i+1){
+	arr[i]->mined++;
+	total++;
+	//	printf("BlockID = %d, p%d\n",curr->blockID,arr[i]->id);
+      }
+    }
+    curr = curr->prev;
+  }
+  */
+
+  Block * curr = chain->race_set->choose();
+  std::ofstream myfile;
+  myfile.open("variance.txt");
+   
+  for(int j = 0;j<100;j++){
+    float num = 0;
+    for(int i=0;i<100;i++){
+      if(curr->playerID==2){
+        num++;
+      }
+      
+    }
+    float avg = num/((float)100);
+    std::ostringstream ss;
+    std::ostringstream ss2;
+    //    ss<0.25;
+    float size = .25;
+    std::string s = (ss.str());
+    std::string k = s+"\n";
+    myfile<<avg;
+  }
+
+  
+  
+  printf("total is = %d\n",total);  
+  for(int i=0;i<num_players;i++){
+    float m1 = ((float)arr[i]->mined)/total;
+    printf("p%d: %f\n",(i+1),m1);
+  }
+  //  delete chain;
+     delete p1;
+     delete p2;
+     delete p3;
+     delete p4;
+     delete p5;
+     delete p6;
+     return 0;
+}
+
+
+
+int game3(){
+  // Chain * c = new Chain();
+  
+
+
+  return 0;
+}
+
+int game4(){
+  for(int k=0;k<50000000;k++){
+  Player ** list = new Player*[3];
+  for(int i=0;i<3;i++){
+    list[i] = new Player(.1,i+1);
+  }
+  for(int i=0;i<3;i++){
+    delete list[i];
+  }
+  // Player * p = new Player(.1,5);
+    delete [] list;
+  }
+  return 0;
+}
+
+
+void thread_func1(int num_rounds,int (*strategy[])(Player * p, Chain * c),float a, float b){
+  float h = 1-a-b;
+  float sizes[] = {h,a,b};
+  float * results = game0(3,num_rounds,sizes,strategy);
+  int rewards1 = results[1];
+  int rewards2 = results[2];
+  if(rewards1>a && rewards2>b){
+    rewards1 = 1;
+  }
+  else if(rewards1>a && rewards2<b){
+    rewards1 = 2;
+  }
+  else if(rewards1<a && rewards2>b){
+    rewards1 = 3;
+  }
+  else{
+    rewards1 = 0;
+  }
+  
+
+}
+
+int game5(int num_rounds){
+  int numThreads = 8;
+  int results[150][150];
+  int (*s)(Player * p, Chain * c) = selfish;
+  int (*h)(Player * p, Chain * c) = honestMine;
+  
+
+
+
+  return 0;
+}
+
+
+int game6(int num_rounds){
+  float a = 0;
+  float b = 0;
+  float honest = 1-a-b;
+  int (*h)(Player * p, Chain * c) = honestMine;
+  int (*s)(Player * p, Chain * c) = selfish;
+  int (*strategy[])(Player * p, Chain * c) = {h,s,s};
+
+  
+  std::ofstream myfile;
+  myfile.open("test4");
+  
+  for(int i=0;i<33;i++){
+    int percent2 = (int)(((float)(100*i))/((float)33));
+    float percent = ((float)percent2)/((float)100);
+    printf("%d%%\r",percent2);
+    std::cout.flush();
+    float powers[] = {honest,b,b};
+    float * results =  game0(3,num_rounds,powers,strategy);
+    std::ostringstream ss;
+    std::ostringstream ss2;
+    ss2<<b;
+    ss<<results[1];
+    std::string s(ss.str());
+    std::string s2(ss2.str());
+    std::string k = s2+","+s+"\n";
+    myfile<<k;
+    b = b + .01;
+    a = b;
+    honest = 1-a-b;
+    delete [] results;
+  }
+
+}
+
+
+
+int main2(int argc, char ** argv){
+  char * a2 = argv[1];
+  char * b2 = argv[2];
+  printf("%d\n",argc);
+  std::string a1(a2);
+  std::string b1(b2);
+  printf("%s\n",a1.c_str());
+  float a = std::stof(a1,NULL);
+  float b = std::stof(b1,NULL);
+  int num_players = 3;
+  int num_rounds = 50000;
+  float honest = 1-a-b;
+  float sizes[3] = {honest,a,b};
+  int (*h)(Player * p, Chain * c) = honestMine;
+  int (*s)(Player * p, Chain * c) = selfish;
+  int (*strategy[])(Player * p, Chain * c) = {h,s,s};
+  float * results = game0(num_players,num_rounds,sizes,strategy);
+  printf("%f\n",results[1]);
+  printf("%f\n",results[2]);
+  // printf("%f\n",f);
+  //   game2();
+  //   game6(900000);
+  //   twoDimPlot_v2(500000);
+  //   oneDimPlot(50000,.01,.25);
+  //   game4();
+}
+
+
+
+
+int main(){
+
+  int num_players = 3;
+  int num_rounds = 5000;
+  float a = .25;
+  float b = .25;
+  float honest = 1-a-b;
+  float sizes[3] = {honest,a,b};
+  int (*h)(Player * p, Chain * c) = honestMine;
+  int (*s)(Player * p, Chain * c) = selfish;
+  int (*strategy[])(Player * p, Chain * c) = {h,s,s};
+  float * results = game0(num_players,num_rounds,sizes,strategy);
+  printf("h1: %f\n",float[0]);
+
+}
+
+
+
+
+

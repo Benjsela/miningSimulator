@@ -1,0 +1,30 @@
+CFLAGS = -Wall -g
+CROSS_COMPILE = x86_64-w64-mingw32-
+CC = $(CROSS_COMPILE)g++ -std=c++11
+WINDRES = $(CROSS_COMPILE)windres
+AR = $(CROSS_COMPILE)ar
+STRIP = $(CROSS_COMPILE)strip
+
+
+
+games.exe: games.o strats.o definitions.o engine.o
+	$(CC) $(CFLAGS) -o games.exe games.o strats.o definitions.o engine.o 
+
+games.o: games.cpp strats.hpp
+	$(CC) $(CFLAGS) -c games.cpp 
+
+engine.o: engine.cpp definitions.hpp strats.hpp engine.hpp 
+	$(CC) $(CFLAGS) -c engine.cpp
+
+strats.o: strats.cpp strats.hpp
+	$(CC) $(CFLAGS) -c strats.cpp 
+
+
+definitions.o: definitions.cpp definitions.hpp
+	$(CC) $(CFLAGS) -c definitions.cpp 
+
+
+
+
+
+
