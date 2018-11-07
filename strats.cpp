@@ -34,7 +34,7 @@ int publish_n(int n, Player * p, Chain * c){
 }
 
 
-int pub_n(Player * p, Chain * c){
+int pub_n( Player * p, Chain * c){
   Block * f = p->pchain->origin;
   int len = p->pchain->length+f->blockID;
   if(p->pchain->length>2){

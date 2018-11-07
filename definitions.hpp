@@ -56,6 +56,7 @@ public:
   int length;
   privateChain();  
   int mineBlock(int id);
+  int releaseBlock();
   int clear();
   ~privateChain();
 

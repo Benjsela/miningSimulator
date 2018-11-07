@@ -3,3 +3,5 @@ int selfish(Player * p, Chain * c);
 int honestMine(Player * p, Chain * c);
 int publish_n(int n, Player * p, Chain * c);
 int pub_n(Player * p, Chain * c);
+//template<typename TFunc>
+//void f(TFunc f) {}

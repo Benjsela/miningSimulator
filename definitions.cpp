@@ -272,6 +272,14 @@ int privateChain::mineBlock(int id){
   return 0; 
 }
 
+int privateChain::releaseBlock(){
+  
+
+
+
+  return 0;
+}
+
 
 
 int privateChain::clear(){
