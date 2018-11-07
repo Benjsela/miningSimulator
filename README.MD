@@ -1,2 +1,2 @@
-#Bitcoin Mining Simulator
+# Bitcoin Mining Simulator
 text
